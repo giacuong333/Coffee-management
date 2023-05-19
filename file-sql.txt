@@ -1,0 +1,754 @@
+
+
+
+drop database if exists qlcoffee;
+create database qlcoffee;
+use qlcoffee;
+
+DELIMITER |
+CREATE FUNCTION calc_total (tienbandau int, tiendoanhthu int)
+RETURNS int
+BEGIN
+   DECLARE tongtien int;
+   SET tongtien = tienbandau + tiendoanhthu;
+   RETURN tongtien;
+END
+|
+DELIMITER ;
+
+delimiter //
+create function createHoaDonID()
+returns char(4)
+begin 
+  declare maxid int ;
+  set maxid = (Select max(cast(substring(mahd,3) as unsigned)) from hoadon);
+  if maxid is null then 
+      set maxid = 1 ;
+   else
+    set maxid  = maxid +1 ;
+   end if ;
+   return concat('HD',lpad(maxid,2,'0'));
+end //
+delimiter ;
+
+delimiter //
+create function createNhaCCID()
+returns char(4)
+begin 
+    declare maxid int;
+    set maxid = (Select max(cast(substring(manhacc,2) as unsigned)) from nhacc);
+    if maxid is null then 
+       set maxid = 1 ;
+    else 
+       set maxid = maxid +1;
+    end if; 
+    return concat('N',lpad(maxid,3,'0'));
+end //
+delimiter ;
+
+delimiter //
+create function createNguyenlieuID()
+returns char(4)
+begin 
+    declare maxid int;
+    set maxid = (Select max(cast(substring(manguyenlieu,3) as unsigned)) from nguyenlieu);
+    if maxid is null then 
+       set maxid = 1 ;
+    else 
+       set maxid = maxid +1;
+    end if; 
+    return concat('NL',lpad(maxid,2,'0'));
+end //
+delimiter ;
+
+delimiter //
+create function createKhachHangID()
+returns char(4)
+begin 
+    declare maxid int;
+    set maxid = (Select max(cast(substring(makh,3) as unsigned)) from khachhang);
+    if maxid is null then 
+       set maxid = 1 ;
+    else 
+       set maxid = maxid +1;
+    end if; 
+    return concat('KH',lpad(maxid,2,'0'));
+end //
+delimiter ;
+
+delimiter //
+create function createMaPNID()
+returns char(4)
+begin
+     declare maxid int;
+     set maxid = (Select max(cast(substring(maphieunhap,3) as unsigned)) from phieunhap);
+     if maxid is null then 
+        set maxid =1 ;
+     else 
+        set maxid = maxid +1 ;
+     end if;
+     return concat('PN',lpad(maxid,2,'0'));
+end //
+delimiter ;
+
+delimiter //
+create function getMaxPNID()
+returns char(4)
+begin
+     declare maxid int;
+     set maxid = (Select max(cast(substring(maphieunhap,3) as unsigned)) from phieunhap);
+     return concat('PN',lpad(maxid,2,'0'));
+end //
+delimiter ;
+
+create table nhanvien(
+   manv char(4) primary key ,
+   tenNV varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci ,
+   gioitinh varchar(3) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci ,
+   ngaysinh datetime ,
+   quequan varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci ,
+   CMND char(12) unique ,
+   sdt char(10) unique ,
+   email varchar(100) ,
+   vaitro varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci ,
+   trangthai varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci ,
+   ghichu varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci ,
+   hinhanh varchar(20000)
+);
+
+create table nhacc(
+   manhacc char(4) primary key ,
+   tennhacc varchar(40) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci ,
+   diachi varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci ,
+   sdt char(10) unique ,
+   email varchar(100)   
+);
+
+create table phieunhap(
+   maphieunhap char(4) primary key ,
+   ngaynhap datetime ,
+   tonggia int ,
+   manhacc char(4) ,
+   manv char(4) 
+);
+create table ctphieunhap(
+   soluong int ,
+   dongia int ,
+   maphieunhap char(4) ,
+   manguyenlieu char(4) 
+
+);
+create table nguyenlieu(
+   manguyenlieu char(4) primary key ,
+   tennguyenlieu varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci ,
+   mota varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci ,
+   soluong int
+);
+create table ctphache(
+   donvi int ,
+   manguyenlieu char(4) ,
+   masp char(4) 
+);
+create table hoadon(
+   mahd char(4) primary key ,
+   thoigiantao datetime ,
+   thoigianthanhtoan datetime ,
+   manv char(4) ,
+   makh char(4) ,
+   trangthai varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci,
+   loaithanhtoan varchar(12) character set utf8mb4 collate utf8mb4_unicode_ci,
+   ghichu varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci,
+   tienthue int,
+   tienkhachdua int,
+   tonggia int
+
+);
+create table cthd (
+   soluong int ,
+   thanhtien int,
+   mahd char(4) ,
+   masp char(4) ,
+   ghichu varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci
+); 
+create table sanpham(
+   masp char(4) primary key ,
+   tensp varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci not null,
+   gia float,
+   soluong int ,
+   maloai char(4) ,
+   hinhanh varchar(20000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci ,
+   trangthai varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci,
+   ghichu varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci
+);
+create table theloai(
+  maloai char(4) primary key ,
+  tenloai varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci 
+
+
+);
+create table calamviec(
+   maca char(4) primary key,
+   manv char(4), 
+   giobd time ,
+   giokt time ,
+   tienbandau int ,
+   tiendoanhthu int ,
+   tongtien int  ,
+   ngay date,
+   constraint FK_calamviec_manv FOREIGN key(manv) REFERENCES nhanvien(manv) on delete set null
+);
+
+create table taikhoan(
+  password varchar(1000) not null,
+  manv char(4) primary key not null,
+  maquyen char(4) 
+);
+create table khachhang (
+   makh char(4) primary key,
+   tenkh varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci,
+   sdt char(10) unique ,
+  
+   diachi varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci 
+);
+create table quyen(
+    maquyen char(4) primary key ,
+    tenquyen varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci 
+);
+create table chucnang(
+   machucnang char(4) primary key ,
+   tenchucnang varchar(1000) CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci
+);
+create table ctchucnang(
+   machucnang char(4) not null,
+   maquyen char(4) not null,
+   Constraint PK_ctchucnang primary key(machucnang,maquyen),
+constraint FK_ctchucnang_machucnang foreign key(machucnang) references chucnang(machucnang) on delete cascade,
+constraint FK_ctchucnang_maquyen foreign key(maquyen) references quyen(maquyen) on delete cascade
+);
+
+Alter table phieunhap add constraint FK_PN_manhacc foreign key (manhacc) references nhacc(manhacc) on delete set null;
+Alter table phieunhap add constraint FK_PN_manv foreign key(manv) references nhanvien(manv) on delete set null;
+Alter table ctphieunhap add constraint FK_CTPN_maphieunhap foreign key(maphieunhap) references phieunhap(maphieunhap) on delete cascade;
+Alter table ctphieunhap add constraint FK_CTPN_manguyenlieu foreign key (manguyenlieu) references nguyenlieu(manguyenlieu) on delete cascade;
+Alter table ctphieunhap add constraint PK_CTPN primary key(maphieunhap,manguyenlieu);
+Alter table ctphache add constraint FK_ctphache_manguyenlieu foreign key(manguyenlieu) references nguyenlieu(manguyenlieu) on delete cascade;
+Alter table ctphache add constraint FK_ctphache_masp foreign key(masp) references sanpham(masp) on delete cascade;
+
+Alter table ctphache add constraint PK_ctphache primary key(manguyenlieu,masp);
+Alter table hoadon add constraint FK_hoadon_manv foreign key(manv) references nhanvien(manv) on delete set null;
+Alter table hoadon add constraint FK_hoadon_makh foreign key (makh) references khachhang(makh) on delete set null;
+
+Alter table cthd add constraint FK_cthd_mahd foreign key (mahd) references hoadon(mahd) on delete cascade;
+Alter table cthd add constraint FK_cthd_masp foreign key (masp) references sanpham(masp) on delete cascade;
+Alter table cthd add constraint PK_cthd primary key(mahd,masp);
+
+Alter table sanpham add constraint FK_sanpham_maloai foreign key(maloai) references theloai(maloai) on delete set null;
+
+
+Alter table taikhoan add constraint FK_taikhoan_manv foreign key(manv) references nhanvien(manv) on delete cascade;
+Alter table taikhoan add constraint FK_taikhoan_maquyen foreign key(maquyen) references quyen(maquyen) on delete set null ;
+
+DELIMITER //
+CREATE TRIGGER check_gender_before_insert
+BEFORE INSERT ON nhanvien
+FOR EACH ROW
+BEGIN
+    IF NEW.gioitinh NOT IN ('nam', 'nữ') THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Giới tính phải là nam hoặc nữ';
+    END IF;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER check_gender_before_update
+BEFORE UPDATE ON nhanvien
+FOR EACH ROW
+BEGIN
+    IF NEW.gioitinh NOT IN ('nam', 'nữ') THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Giới tính phải là nam hoặc nữ';
+    END IF;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER check_nhanvien_email_before_insert
+BEFORE INSERT ON nhanvien
+FOR EACH ROW
+BEGIN
+    IF NEW.email NOT LIKE '%@%.%' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Email không hợp lệ';
+    END IF;
+END//
+DELIMITER ;
+
+
+DELIMITER //
+CREATE TRIGGER check_nhanvien_email_before_update
+BEFORE update ON nhanvien
+FOR EACH ROW
+BEGIN
+    IF NEW.email NOT LIKE '%@%.%' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Email không hợp lệ';
+    END IF;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER check_nhanvien_sdt_before_insert
+BEFORE INSERT ON nhanvien
+FOR EACH ROW
+BEGIN
+    IF NEW.sdt NOT LIKE '0%' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'SDT không hợp lệ';
+    END IF;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER check_nhanvien_sdt_before_update
+BEFORE update ON nhanvien
+FOR EACH ROW
+BEGIN
+    IF NEW.sdt NOT LIKE '0%' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'SDT không hợp lệ';
+    END IF;
+END//
+DELIMITER ;
+
+
+DELIMITER //
+CREATE TRIGGER check_nhancc_sdt_before_insert
+BEFORE INSERT ON nhacc
+FOR EACH ROW
+BEGIN
+    IF NEW.sdt NOT LIKE '0%' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'SDT không hợp lệ';
+    END IF;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER check_nhacc_sdt_before_update
+BEFORE update ON nhacc
+FOR EACH ROW
+BEGIN
+    IF NEW.sdt NOT LIKE '0%' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'SDT không hợp lệ';
+    END IF;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER check_nhacc_email_before_insert
+BEFORE INSERT ON nhacc
+FOR EACH ROW
+BEGIN
+    IF NEW.email NOT LIKE '%@%.%' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Email không hợp lệ';
+    END IF;
+END//
+DELIMITER ;
+
+
+DELIMITER //
+CREATE TRIGGER check_nhacc_email_before_update
+BEFORE update ON nhacc
+FOR EACH ROW
+BEGIN
+    IF NEW.email NOT LIKE '%@%.%' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Email không hợp lệ';
+    END IF;
+END//
+DELIMITER ;
+
+
+DELIMITER //
+CREATE TRIGGER check_khachhang_sdt_before_insert
+BEFORE INSERT ON khachhang
+FOR EACH ROW
+BEGIN
+    IF NEW.sdt NOT LIKE '0%' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'SDT không hợp lệ';
+    END IF;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER check_khachhang_sdt_before_update
+BEFORE update ON khachhang
+FOR EACH ROW
+BEGIN
+    IF NEW.sdt NOT LIKE '0%' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'SDT không hợp lệ';
+    END IF;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER check_calamviec_giobd_smaller_giokt_before_insert
+BEFORE INSERT ON calamviec
+FOR EACH ROW
+BEGIN
+    IF NEW.giobd > NEW.giokt THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Giờ bắt đầu phải bé hơn giờ kết thúc';
+    END IF;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER check_calamviec_giobd_smaller_giokt_before_update
+BEFORE update ON calamviec
+FOR EACH ROW
+BEGIN
+    IF NEW.giobd > NEW.giokt THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Giờ bắt đầu phải bé hơn giờ kết thúc';
+    END IF;
+END//
+DELIMITER ;
+
+delimiter //
+create trigger update_tongtien_phieunhap_before_delete_nguyenlieu
+before delete on nguyenlieu 
+for each row 
+begin 
+   update phieunhap as p set tonggia =(select coalesce(sum(dongia),0) from ctphieunhap where maphieunhap = p.maphieunhap and manguyenlieu <> OLD.manguyenlieu ) where maphieunhap in (select maphieunhap from ctphieunhap where manguyenlieu = OLD.manguyenlieu);
+end//
+delimiter ;
+
+delimiter //
+create trigger update_soluong_nguyenlieu_after_insert_ctphieunhap
+after insert on ctphieunhap
+for each row 
+begin 
+   update nguyenlieu set soluong = soluong + new.soluong where manguyenlieu = new.manguyenlieu ;
+end //
+delimiter ;
+
+delimiter //
+create trigger update_soluong_sanpham_after_update_nguyenlieu 
+after update on nguyenlieu 
+for each row
+begin 
+   update sanpham as sp set soluong =(select coalesce(floor(min(nguyenlieu.soluong/ctphache.donvi)),0) from ctphache,nguyenlieu where masp = sp.masp and nguyenlieu.manguyenlieu = ctphache.manguyenlieu) where masp in (select masp from ctphache where manguyenlieu = old.manguyenlieu);
+end //
+delimiter ;
+
+
+delimiter //
+create trigger update_soluong_sanpham_before_delete_nguyenlieu
+before delete on nguyenlieu 
+for each row
+begin 
+   update sanpham as sp set soluong =(select coalesce(floor(min(nguyenlieu.soluong/ctphache.donvi)),0) from ctphache,nguyenlieu where masp = sp.masp and nguyenlieu.manguyenlieu = ctphache.manguyenlieu and nguyenlieu.manguyenlieu <> old.manguyenlieu) where masp in (select masp from ctphache where manguyenlieu = old.manguyenlieu);
+end //
+delimiter ;
+
+
+delimiter //
+create trigger update_soluong_sanpham_after_insert_ctphache
+after insert on ctphache 
+for each row 
+begin
+   update sanpham set soluong = (select coalesce(floor(min(nguyenlieu.soluong/ctphache.donvi)),0) from ctphache,nguyenlieu where masp = new.masp and nguyenlieu.manguyenlieu = ctphache.manguyenlieu) where masp = new.masp;
+end //
+delimiter ;
+
+delimiter //
+create trigger update_soluong_sanpham_after_update_ctphache
+after update on ctphache 
+for each row 
+begin 
+    update sanpham set soluong = (select coalesce(floor(min(nguyenlieu.soluong/ctphache.donvi)),0) from ctphache,nguyenlieu where masp = old.masp and nguyenlieu.manguyenlieu = ctphache.manguyenlieu) where masp = old.masp;
+end //
+delimiter ;
+
+delimiter //
+create trigger update_soluong_sanpham_before_delete_ctphache 
+before delete on ctphache 
+for each row 
+begin 
+   update sanpham set soluong = (select coalesce(floor(min(nguyenlieu.soluong/ctphache.donvi)),0) from ctphache,nguyenlieu where masp = old.masp and nguyenlieu.manguyenlieu = ctphache.manguyenlieu and nguyenlieu.manguyenlieu <> old.manguyenlieu ) where masp = old.masp ;
+end //
+delimiter ;
+
+delimiter //
+create trigger update_soluong_nguyenlieu_after_update_Istate_hoan_thanhI_hoadon
+after update on hoadon 
+for each row 
+begin 
+   if new.trangthai = 'Hoàn thành' then
+      update nguyenlieu as nl set soluong = soluong - (select coalesce(sum(ctphache.donvi*cthd.soluong),0) from cthd,ctphache where mahd = old.mahd and ctphache.masp = cthd.masp and ctphache.manguyenlieu = nl.manguyenlieu) where manguyenlieu in (select distinct manguyenlieu from cthd,ctphache where mahd = old.mahd and ctphache.masp = cthd.masp);
+   end if;
+end //
+delimiter ;
+ 
+delimiter //
+create trigger update_tonggia_hoadon_after_insert_cthd
+after insert on cthd 
+for each row 
+begin 
+   update hoadon set tonggia =(select coalesce(sum(thanhtien),0) from cthd where mahd = new.mahd)  where mahd = new.mahd;
+end //
+delimiter ;
+
+delimiter //
+create trigger update_tonggia_hoadon_after_delete_cthd
+after delete on cthd 
+for each row 
+begin 
+   update hoadon set tonggia =(select coalesce(sum(thanhtien),0) from cthd where mahd = old.mahd)  where mahd = old.mahd;
+end //
+delimiter ;
+
+delimiter //
+create trigger update_tonggia_hoadon_after_update_cthd
+after update on cthd 
+for each row 
+begin 
+   update hoadon set tonggia =(select coalesce(sum(thanhtien),0) from cthd where mahd = old.mahd)  where mahd = old.mahd;
+end //
+delimiter ;
+	
+INSERT INTO nhanvien (manv, tenNV, gioitinh, ngaysinh, quequan, CMND, sdt, email,vaitro,trangthai,ghichu,hinhanh) VALUES 
+('NV01', 'Nguyễn Văn A', 'nam', '1990-01-01', 'Hà nội', '001122334455', '0123456789', 'nva@example.com','Quản lý',"Đang làm","","nguyenvana.png"),
+('NV02', 'Trần Thị B', 'nữ', '1991-02-02', 'Hải Phòng', '112233445566', '0234567890', 'ttb@example.com','Nhân viên',"Đang làm","","tranthib.png"),
+('NV03', 'Lê Văn C', 'nam', '1992-03-03', 'Đà Nẵng', '223344556677',  '0345678901', 'lvc@example.com','Nhân viên',"Đang làm","","levanc.png"),
+('NV04', 'Phạm Thị D', 'nữ', '1993-04-04', 'Huế', '334455667788',  '0456789012', 'ptd@example.com','Nhân viên',"Đang làm","","phamthid.png"),
+('NV05', 'Hoàng Văn E', 'nam', '1994-05-05', 'Nha Trang', '445566778899',  '0567890123', 'hve@example.com','Nhân viên',"Đang làm","","hoangvane.png"),
+('NV06', 'Do Thị F', 'nữ', '1995-06-06', 'Đà Lạt', '556677889900', '0678901234', 'dtf@example.com','Nhân viên',"Đang làm","","dothif.png"),
+('NV07', 'Trường Văn G', 'nam', '1996-07-07', 'Cần Thơ', '667788990011', '0789012345', 'tvg@example.com','Nhân viên',"Đang làm","","truongvang.png"),
+('NV08', 'Nguyễn Thị H', 'nữ', '1997-08-08', 'Vũng Tàu', '778899001122',  '0890123456', 'nth@example.com','Nhân viên',"Đang làm","","nguyenthih.png"),
+('NV09', 'Lê Thị I', 'nữ', '1998-09-09', 'Phan Thiết', '889900112233', '0901234567', 'lti@example.com','Nhân viên',"Đang làm","","lethii.png"),
+('NV10', 'Phạm Văn J', 'nam', '1999-10-10', 'Quy Nhơn', '990011223344',  '0975810314', 'pvj@example.com','Nhân viên',"Đang làm","","phamvanj.png");
+
+INSERT INTO nhacc (manhacc, tennhacc, diachi, sdt, email) VALUES 
+('N001', 'Công ty TNHH Cà Phê Nguyên Chất', '123 Đường Trần Hưng Đạo, Quận 1, TP.HCM', '0123456789', 'nguyenchat@coffee.com'),
+('N002', 'Công ty TNHH Đường Biên Hòa', '456 Đường Lê Duẩn, Quận 3, TP.HCM', '0987654321', 'duongbienhoa@sugar.com'),
+('N003', 'Công ty TNHH Sữa Việt Nam', '789 Đường Nguyễn Trãi, Quận 5, TP.HCM', '0123987654', 'suavietnam@milk.com'),
+('N004', 'Công ty TNHH Trà Xanh Việt Nam', '147 Đường Phạm Ngũ Lão, Quận 1, TP.HCM', '0987123456', 'traxanhvietnam@tea.com'),
+('N005', 'Công ty TNHH Chocolate Việt Nam', '258 Đường Lý Tự Trọng, Quận 1, TP.HCM', '0123459876', 'chocolatevietnam@syrup.com'),
+('N006', 'Công ty TNHH Bột Cacao Việt Nam', '369 Đường Nguyễn Thị Minh Khai, Quận 3, TP.HCM', '0987651234', 'botcacaovietnam@cocoa.com'),
+('N007', 'Công ty TNHH Nước Ép Việt Nam', '741 Đường Nguyễn Văn Cừ, Quận 5, TP.HCM', '0123765498', 'nuocepvietnam@juice.com'),
+('N010', 'Công ty TNHH Gia Vị Việt Nam', '147 Đường Nguyễn Thị Minh Khai, Quận 3, TP.HCM', '0987214365', 'giavivietnam@spice.com');
+
+INSERT INTO khachhang (makh, tenkh, sdt, diachi)
+VALUES ('KH01', 'Nguyễn Văn A', '0163456789',  '123 Nguyễn Trãi'),
+       ('KH02', 'Trần Thị B', '0927654321',  '456 Lê Lợi'),
+       ('KH03', 'Lê Thị C', '0123456789',  '789 Trần Hưng Đạo'),
+       ('KH04', 'Phạm Văn D', '0967654321',  '321 Nguyễn Huệ'),
+       ('KH05', 'Hoàng Thị E', '0123456779', '654 Lê Duẩn'),
+       ('KH06', 'Nguyễn Văn F', '0957654321',  '987 Trần Phú'),
+       ('KH07', 'Trần Thị G', '0123458789',  '246 Phạm Ngũ Lão'),
+       ('KH08', 'Lê Văn H', '0947654311', '369 Lý Tự Trọng'),
+       ('KH09', 'Phạm Thị I', '0123459789',  '159 Nguyễn Du'),
+       ('KH10', 'Hoàng Văn J', '0387654321',  '753 Lê Thánh Tôn');
+
+INSERT INTO theloai (maloai, tenloai)
+VALUES ('TL01', 'Cà phê đen'),
+       ('TL02', 'Cà phê sữa'),
+       ('TL03', 'Cappuccino'),
+       ('TL04', 'Espresso'),
+       ('TL06', 'Mocha'),
+       ('TL07', 'Americano');
+
+INSERT INTO sanpham (masp, tensp, gia, soluong, maloai, hinhanh,trangthai,ghichu)
+VALUES ('SP01', 'Cà phê đen nóng', 20000, 100, 'TL01', 'cafedennong.jpg','Đang bán',''),
+       ('SP02', 'Cà phê đen đá',  25000, 100, 'TL01', 'cafedenda.jpg','Đang bán',''),
+       ('SP03', 'Cà phê đen sữa nóng', 30000, 100, 'TL01', 'cafedensuanong.jpg','Đang bán',''),
+       ('SP04', 'Cà phê đen sữa đá',  35000, 100, 'TL01', 'cafedensuada.jpg','Đang bán',''),
+       ('SP05', 'Cà phê sữa nóng',  30000, 100, 'TL02', 'cafesuanong.jpg','Đang bán',''),
+       ('SP06', 'Cà phê sữa đá',  35000, 100, 'TL02', 'cafesuada.jpg','Đang bán',''),
+       ('SP07', 'Cà phê sữa tươi nóng',  40000, 100, 'TL02', 'cafesuatuoingong.jpg','Đang bán',''),
+       ('SP08', 'Cà phê sữa tươi đá',  45000, 100, 'TL02', 'cafesuatuoinda.jpg','Đang bán',''),
+       ('SP09', 'Cappuccino nóng',  40000, 100, 'TL03', 'cappuccinonong.jpg','Đang bán',''),
+       ('SP10', 'Cappuccino đá xay',  45000, 100, 'TL03', 'cappuccinodaxay.jpg','Đang bán',''),
+       ('SP11', 'Espresso nóng',  30000, 100, 'TL04', 'espressonong.jpg','Đang bán',''),
+       ('SP12', 'Espresso đá xay',  35000, 100, 'TL04', 'espressodaxay.jpg','Đang bán',''),
+       ('SP13', 'Mocha nóng',  40000, 100, 'TL06', 'mochanong.jpg','Đang bán',''),
+       ('SP14', 'Mocha đá xay',  45000, 100, 'TL06', 'mochadaxay.jpg','Đang bán',''),
+       ('SP15', 'Americano nóng',  30000, 100, 'TL07', 'americanonong.jpg','Đang bán',''),
+       ('SP16', 'Americano đá',  35000, 100, 'TL07', 'americandoda.jpg','Đang bán','');
+
+
+INSERT INTO hoadon(mahd, thoigiantao,thoigianthanhtoan, tonggia, manv, makh,trangthai,loaithanhtoan,ghichu,tienthue,tienkhachdua)
+VALUES
+    ('HD01', '2022-01-01 08:00:00','2022-01-01 10:00:00', 70000, 'NV01', 'KH01','Chờ order','Tiền mặt','Không bỏ đá',0,100000),
+    ('HD02', '2022-01-01 10:00:00', '2022-01-01 12:00:00',230000, 'NV02', 'KH02','Chờ order','Chuyển khoản','',0,250000),
+    ('HD03', '2022-01-01 12:00:00','2022-01-01 14:00:00' ,150000, 'NV03', 'KH03','Chờ xác nhận','Tiền mặt','Không bỏ cacao',0,150000);
+
+INSERT INTO cthd(soluong, thanhtien, mahd, masp,ghichu)
+VALUES
+    (1, 20000, 'HD01', 'SP01',''),
+    (2, 50000, 'HD01', 'SP02',''),
+    (3, 90000, 'HD02', 'SP03',''),
+    (4, 140000, 'HD02', 'SP04',''),
+    (5, 150000, 'HD03', 'SP05','');
+
+
+insert into nguyenlieu(manguyenlieu,tennguyenlieu,mota,soluong) values
+('NL01','Đường','đường trắng',1000),
+('NL02','Bột cà phê','Bột cà phê nguyên chất',1000),
+('NL03','Sữa đặc','Sữa đặc',1000),
+('NL04','Sữa tươi','Sữa tươi',1000),
+('NL05','Bột cà phê espresso','Bột cà phê espresso',1000),
+('NL06','Bột cacao','Bột cacao','1000'),
+('NL07','Bột quế','Bột quế',1000),
+('NL08','Sốt chocolate','Sốt chocolate',1000);
+
+
+insert into ctphache(donvi,manguyenlieu,masp) values
+('100','NL02','SP01'),
+('100','NL02','SP02'),
+('100','NL02','SP03'),
+('50','NL03','SP03'),
+('100','NL02','SP04'),
+('50','NL03','SP04'),
+('100','NL02','SP05'),
+('100','NL03','SP05'),
+('100','NL02','SP06'),
+('100','NL03','SP06'),
+('100','NL02','SP07'),
+('100','NL04','SP07'),
+('100','NL02','SP08'),
+('100','NL04','SP08'),
+('100','NL05','SP09'),
+('30','NL06','SP09'),
+('30','NL07','SP09'),
+('30','NL01','SP09'),
+('100','NL05','SP10'),
+('30','NL06','SP10'),
+('30','NL07','SP10'),
+('30','NL01','SP10'),
+('70','NL02','SP11'),
+('30','NL04','SP11'),
+('30','NL01','SP11'),
+('70','NL02','SP12'),
+('30','NL04','SP12'),
+('30','NL01','SP12'),
+('70','NL05','SP13'),
+('30','NL04','SP13'),
+('30','NL01','SP13'),
+('30','NL08','SP13'),
+('70','NL05','SP14'),
+('30','NL04','SP14'),
+('30','NL01','SP14'),
+('30','NL08','SP14'),
+('100','NL05','SP15'),
+('100','NL05','SP16');
+
+
+
+insert into phieunhap(maphieunhap,ngaynhap,tonggia,manhacc,manv) values
+('PN01','2021-01-01',350000,'N001','NV01'),
+('PN02','2021-01-01',100000,'N002','NV02'),
+('PN03','2021-01-01',140000,'N003','NV03'),
+('PN05','2021-01-01',60000,'N005','NV05'),
+('PN06','2021-01-01',120000,'N006','NV06');
+
+
+
+
+
+insert into ctphieunhap(soluong,dongia,maphieunhap,manguyenlieu) values
+(1000,150000,'PN01','NL02'),
+(1000,200000,'PN01','NL05'),
+(1000,100000,'PN02','NL01'),
+(1000,80000,'PN03','NL03'),
+(1000,60000,'PN03','NL04'),
+(1000,60000,'PN05','NL08'),
+(1000,60000,'PN06','NL06'),
+(1000,60000,'PN06','NL07');
+
+INSERT INTO calamviec (maca, giobd, giokt, tienbandau,tiendoanhthu,tongtien,manv) 
+VALUES 
+('CA01', '06:00:00', '08:00:00', 1000000,0,1000000,'NV02'),
+('CA02', '08:00:00', '10:00:00', 1000000,0,1000000,'NV03'),
+('CA03', '10:00:00', '12:00:00', 1000000,0,1000000,'NV02'),
+('CA04', '12:00:00', '14:00:00', 1000000,0,1000000,'NV04'),
+('CA05', '14:00:00', '16:00:00', 1000000,0,1000000,'NV03'),
+('CA06', '16:00:00', '18:00:00', 1000000,0,1000000,'NV04'),
+('CA07', '18:00:00', '20:00:00', 1000000,0,1000000,'NV09'),
+('CA08', '20:00:00', '22:00:00', 1000000,0,1000000,'NV07'),
+('CA09', '22:00:00', '24:00:00', 1000000,0,1000000,'NV07'),
+('CA10', '00:00:00', '06:00:00', 1000000,0,1000000,'NV09');
+
+
+
+
+INSERT INTO quyen (maquyen, tenquyen) 
+VALUES 
+('Q001', 'admin'),
+('Q002', 'Pha chế'),
+('Q003', 'Thu ngân');
+
+INSERT INTO taikhoan (password,  manv, maquyen) 
+VALUES 
+('admin', 'NV01', 'Q001'),
+('123',  'NV02', 'Q002'),
+('123',  'NV03', 'Q002'),
+('123', 'NV04', 'Q003'),
+('123',  'NV05', 'Q002'),
+('123',  'NV06', 'Q002'),
+('123',  'NV07', 'Q002'),
+('123','NV08', 'Q002'),
+('123',  'NV09', 'Q002'),
+('123',  'NV10', 'Q002');
+
+
+insert into chucnang(machucnang,tenchucnang) values
+('CN01','Bán hàng'),
+('CN02','Hóa đơn'),
+('CN03','Sản phẩm'),
+('CN04','Thống kê'),
+('CN05','Nhân viên'),
+('CN06','Phân quyền'),
+('CN07','Quản lý quyền'),
+('CN08','Nhà cung cấp'),
+('CN09','Nguyên liệu');
+insert into ctchucnang(machucnang,maquyen) values
+('CN01','Q001'),
+('CN02','Q001'),
+('CN03','Q001'),
+('CN04','Q001'),
+('CN05','Q001'),
+('CN06','Q001'),
+('CN07','Q001'),
+('CN08','Q001'),
+('CN09','Q001'),
+('CN01','Q002'),
+('CN02','Q002'),
+('CN03','Q002');
